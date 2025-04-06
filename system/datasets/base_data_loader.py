@@ -1,8 +1,10 @@
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import RandomSampler, DataLoader
 
-dataset_map = {
+from system.datasets.kitti_dataset import KittiDataset
 
+dataset_map = {
+    'kitti': KittiDataset,
 }
 
 class BaseDataModule(LightningDataModule):
@@ -41,7 +43,7 @@ class BaseDataModule(LightningDataModule):
 
     def get_val_dataset(self):
         if self.cfg.dataset_name in dataset_map.keys():
-            return dataset_map[self.cfg.dataset_name](self.cfg,'')
+            return dataset_map[self.cfg.dataset_name](self.cfg,'val')
 
     def get_test_dataset(self):
         if self.cfg.dataset_name in dataset_map.keys():

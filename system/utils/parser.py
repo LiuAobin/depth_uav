@@ -13,6 +13,8 @@ def create_parser():
     parser.add_argument('--batch_size', type=int,
                         default=4,
                         help='每个小批次的大小')
+    parser.add_argument('--data_path', type=str,default=None,
+                        help='数据集路径')
     parser.add_argument('--split', type=str,default=None,
                         help='数据集分割配置文件位置')
     parser.add_argument('--img_ext', type=str,default='.png',

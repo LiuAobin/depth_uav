@@ -79,9 +79,6 @@ def get_optim_scheduler(args, epoch, models, steps_per_epoch):
     获取优化器和学习率调度器的函数
     """
     print(f'core---->setting optimizer is {args.opt.lower()} and scheduler is {args.lr_scheduler.lower()} ')
-    if not isinstance(models, (list, tuple,dict)):
-        models = [models]
-
 
     opt_lower = args.opt.lower()  # 获取优化器名字并转换为小写
     weight_decay = args.weight_decay  # 获取梯度衰减系数
