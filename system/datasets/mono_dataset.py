@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import skimage
 import torch
 from path import Path
 from torch.utils.data import Dataset
@@ -23,15 +24,17 @@ class MonoDataset(Dataset):
         # 数据划分
         if stage == 'train':
             self.filenames = read_lines(Path(cfg.split).joinpath('train_files.txt'))  # 文件名列表
-        else:
+        elif stage == 'val':
             self.filenames = read_lines(Path(cfg.split).joinpath('val_files.txt'))  # 文件名列表
+        else:
+            self.filenames = read_lines(Path(cfg.split).joinpath('test_files.txt'))
         # 图像大小
         self.height = cfg.height
         self.width = cfg.width
         # 插值方法
         self.interp = InterpolationMode.LANCZOS
         # 帧序列
-        self.frame_idx = cfg.frame_idx
+        self.frame_ids = cfg.frame_ids
         self.stage = stage
         self.img_ext = cfg.img_ext
         self.loader = pil_loader
@@ -47,7 +50,8 @@ class MonoDataset(Dataset):
             self.brightness, self.contrast, self.saturation, self.hue)
         # 重塑图像
         self.resize = transforms.Resize((self.height, self.width),interpolation=self.interp)
-        self.load_depth = self.check_depth()
+        # self.load_depth = self.check_depth()
+        self.load_depth = True
 
     def __len__(self):
         return len(self.filenames)
@@ -64,19 +68,20 @@ class MonoDataset(Dataset):
         # 解析数据行
         line = self.filenames[idx].split()
         folder = line[0]
-        frame_index = int(line[1]) if len(line) == 3 else 0
-        side = line[2] if len(line) == 3 else 0
+        frame_index = int(line[1]) if len(line) > 1  else 0
+        side = line[2] if len(line) > 2 else 0
 
         # 存储所有帧图像
-        for i in self.frame_idx:
+        for i in self.frame_ids:
             if i == 's':
                 other_side = {"r": "l", "l": "r"}[side]
                 img = self.get_color(folder, frame_index, other_side, do_flip)
             else:
-                img = self.get_color(folder, frame_index, side, do_flip)
+                img = self.get_color(folder, frame_index+i, side, do_flip)
             img = self.resize(img)
-            img = self.to_tensor(img)
             aug_img = color_aug(img)
+            img = self.to_tensor(img)
+            aug_img = self.to_tensor(aug_img)
             inputs[('color',i)] = img
             inputs[('color_aug',i)] = aug_img
 
@@ -90,12 +95,14 @@ class MonoDataset(Dataset):
         # 获取深度真实
         if self.load_depth:
             depth_gt = self.get_depth(folder, frame_index, side,do_flip)
+            reshape_depth = self.resize_depth(depth_gt, self.height, self.width)
             depth_gt = np.expand_dims(depth_gt, 0)
-            depth_gt = self.resize(depth_gt)
             inputs['depth_gt'] = torch.from_numpy(depth_gt.astype(np.float32))
+            inputs['depth_gt',0] = torch.from_numpy(reshape_depth.astype(np.float32))
+
 
         # 如果是立体图像，则存储外变换矩阵
-        if 's' in self.frame_idx:
+        if 's' in self.frame_ids:
             stereo_T = np.eye(4,dtype=np.float32)
             baseline_sign = -1 if do_flip else 1  # 控制图像是否翻转
             side_sign = -1 if side == 'l' else 1  # 控制左右相机
@@ -103,13 +110,6 @@ class MonoDataset(Dataset):
             inputs['stereo_T'] = torch.from_numpy(stereo_T)
 
         return inputs
-
-
-
-
-
-
-
 
     def check_depth(self):
         return self.stage=='val' or self.stage == 'test'
@@ -124,4 +124,9 @@ class MonoDataset(Dataset):
     def get_intrinsics(self,folder,frame_index,side,do_flip,height,width):
         raise NotImplementedError
 
+    def resize_depth(self,depth, height,width):
+        return skimage.transform.resize(
+            depth, (height, width),  # 目标形状为 (height, width),
+            order=0, preserve_range=True, mode='constant'
+        )
 

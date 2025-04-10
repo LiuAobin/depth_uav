@@ -26,7 +26,7 @@ Wandb
 
 api_key:4186dee52f004546f3d3caaa4113d1a907afa21d
 ```shell
-wandb.login(key=[your_api_key])
+wandb login (key=[4186dee52f004546f3d3caaa4113d1a907afa21d])
 ```
 
 # 要求
@@ -38,5 +38,6 @@ wandb.login(key=[your_api_key])
 --depth_ext 深度图像文件扩展名，如果有则按照这个获取深度
 --val_mode 验证模式，是使用深度验证(depth)，还是使用图像验证(photo)(和训练阶段一致)
 --folder_type 文件类型 是图像对(pair)的形式或者单目视频(sequence)
---frame_idxs 需要的帧索引，0表示目标帧，其余数据以目标帧为起始点移动
+--frame_ids 需要的帧索引，0表示目标帧，其余数据以目标帧为起始点移动
 ```
+9和4

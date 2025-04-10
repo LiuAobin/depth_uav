@@ -8,7 +8,7 @@ import wandb
 from pytorch_lightning.callbacks import Callback, ModelCheckpoint, TQDMProgressBar, Checkpoint
 from pytorch_lightning.callbacks.progress.tqdm_progress import Tqdm
 
-from system.utils import check_dir, print_log, collect_env, output_namespace
+from system.utils.main_utils import check_dir, print_log, collect_env, output_namespace
 
 
 class SetupCallback(Callback):

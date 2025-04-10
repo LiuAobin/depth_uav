@@ -1,4 +1,10 @@
+from typing import Sequence
+
 from pytorch_lightning import LightningModule
+from pytorch_lightning.utilities.types import LRSchedulerConfig, OptimizerLRSchedulerConfig
+from torch import nn
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import LRScheduler, ReduceLROnPlateau
 
 from system.core import get_optim_scheduler,timm_schedulers
 
@@ -8,13 +14,22 @@ class BaseMethod(LightningModule):
         super().__init__()
         # 保存超参数
         self.save_hyperparameters(config)
-        self._build_model()
 
-    def configure_optimizers(self,**models_dict):
+    def get_all_models(self):
+        # 自动获取所有 nn.Module 的子模块
+        models_dict = {
+            name: module
+            for name, module in self.named_children()
+            if isinstance(module, nn.Module)
+        }
+        return models_dict
+
+    def configure_optimizers(self):
         """
         配置优化器和学习率调度器
         Returns:
         """
+        models_dict = self.get_all_models()
         models = list(models_dict.values())  # 将所有 model 取出，转为 list
         optimizer, scheduler, by_epoch = get_optim_scheduler(  # 根据超参数设置优化器和学习率调度器
             self.hparams,
@@ -53,3 +68,4 @@ class BaseMethod(LightningModule):
         Returns:
         """
         raise NotImplementedError
+

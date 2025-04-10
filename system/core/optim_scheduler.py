@@ -170,7 +170,7 @@ def get_optim_scheduler(args, epoch, models, steps_per_epoch):
         lr_scheduler = optim.lr_scheduler.OneCycleLR(
             optimizer,
             max_lr=args.lr,
-            pct_start=0.3,  # 在 30% 的训练步骤内上升到 max_lr
+            pct_start=0.1,  # 在 30% 的训练步骤内上升到 max_lr
             anneal_strategy='cos',  # 余弦下降
             total_steps=total_steps,
             final_div_factor=getattr(args, 'final_div_factor', 1e4))

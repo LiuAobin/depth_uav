@@ -15,6 +15,7 @@ from pytorch_lightning import Trainer, seed_everything
 
 
 torch.set_float32_matmul_precision('high')  # 或者 'medium'
+
 class BaseExperiment(object):
     def __init__(self, args, dataloaders=None, strategy='auto'):
         """
@@ -154,8 +155,7 @@ class BaseExperiment(object):
         print(f'exp---->compute {args.method} method info...')
         device = torch.device(args.device)
         if args.device == 'cuda':
-            assign_gpu = 'cuda:' + (str(args.gpus[0]) if len(args.gpus) == 1 else '0')
-            device = torch.device(assign_gpu)
+            device = torch.device('cuda')
 
         input_dummy = torch.ones(1, args.channels, args.height, args.width).to(device)
         # 获取方法的描述信息、计算FLOPs、获取吞吐量————只计算深度网络

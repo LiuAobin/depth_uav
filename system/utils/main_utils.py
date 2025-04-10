@@ -126,10 +126,10 @@ def measure_throughput(model,input_dummy):
         max_side = max(H,W)  # 获取输入的最大边长
         if max_side >= 128:
             bs = 10  # 当最大边长较大时，批量大小较小
-            repetitions = 1000  # 重复次数较多
+            repetitions = 100  # 重复次数较多
         else:
             bs = 100  # 当最大边长较小时，批量大小较大
-            repetitions = 100  # 重复次数较大
+            repetitions = 1000  # 重复次数较大
         return bs,repetitions
 
     # 判断输入是否是元组类型
@@ -166,3 +166,14 @@ def measure_throughput(model,input_dummy):
     # 计算吞吐量：总样本数/总时间
     Throughput = (bs*repetitions)/total_time
     return Throughput
+
+def disp_to_depth(disp, min_depth, max_depth):
+    """Convert network's sigmoid output into depth prediction
+    The formula for this conversion is given in the 'additional considerations'
+    section of the paper.
+    """
+    min_disp = 1 / max_depth
+    max_disp = 1 / min_depth
+    scaled_disp = min_disp + (max_disp - min_disp) * disp
+    depth = 1 / scaled_disp
+    return scaled_disp, depth

@@ -12,7 +12,6 @@ def visualize_depth(depth, cmap=cv2.COLORMAP_JET):
         cmap (cv2.COLORMAP): 可选的openCV颜色映射，默认为JET
     Returns:
         转换后的深度图，尺寸为(3,H,W),范围[0,1]
-
     """
     x = depth.cpu().numpy()  # 将深度图放到cpu并转换为np数组
     x = np.nan_to_num(x)  # 替换nan为0，避免后续计算出现无效值
